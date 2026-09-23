@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URL 重写规则调试台</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⇄</span>
+      <div>
+        <h1>URL 重写规则调试台</h1>
+        <p>顺序执行的路径匹配 · 捕获组替换 · 重定向 / 内部改写 · 循环检测</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a class="ghost-link" href="/docs" target="_blank" rel="noopener">API 文档</a>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 左侧：规则编辑 -->
+    <section class="panel editor-panel">
+      <div class="panel-head">
+        <h2>① 定义规则链</h2>
+        <div class="example-bar">
+          <select id="exampleSelect" aria-label="载入示例">
+            <option value="">— 选择示例载入 —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="editor-wrap" id="editorWrap">
+        <pre class="gutter" id="gutter" aria-hidden="true"></pre>
+        <textarea
+          id="rulesInput"
+          class="rules-editor"
+          spellcheck="false"
+          placeholder="每行一条：<正则表达式> <替换内容> [标记]&#10;例如：&#10;^/old/(.*)$  /archive/$1  permanent"
+        ></textarea>
+      </div>
+      <p class="syntax-hint">
+        语法：<code>正则 替换 [next|last|break|redirect[=307]|permanent]</code>
+        ，<code>$1</code>/<code>${name}</code> 为捕获组，<code>#</code> 开头为注释，
+        标记缺省为 <code>next</code>。按 <kbd>Ctrl</kbd>+<kbd>Enter</kbd> 执行。
+      </p>
+
+      <div id="errorBox" class="error-box" hidden></div>
+
+      <h2 class="section-title">② 输入请求并执行</h2>
+      <div class="run-bar">
+        <input
+          id="pathInput"
+          class="path-input"
+          type="text"
+          spellcheck="false"
+          placeholder="/old/page?x=1"
+          value="/old/page/"
+        />
+        <label class="steps-label" title="规则评估次数上限（服务端硬上限 500）">
+          步数上限
+          <input id="maxStepsInput" type="number" min="1" max="500" value="50" />
+        </label>
+        <button id="runBtn" class="btn primary">▶ 逐步模拟</button>
+      </div>
+    </section>
+
+    <!-- 右侧：调试结果 -->
+    <section class="panel result-panel">
+      <div class="panel-head">
+        <h2>③ 调试结果</h2>
+        <div class="result-actions" id="resultActions" hidden>
+          <button id="copyTextBtn" class="btn small">复制文本报告</button>
+          <button id="copyJsonBtn" class="btn small">复制 JSON</button>
+        </div>
+      </div>
+
+      <div id="emptyState" class="empty-state">
+        <pre class="empty-ascii">
+   .---.
+  ( ^.^ )  规则链已就绪
+   \ - /     载入示例或编写规则，然后点击「逐步模拟」
+  (|||)
+</pre>
+      </div>
+
+      <div id="resultBody" hidden>
+        <div class="summary" id="summary"></div>
+        <div class="url-flow">
+          <div class="flow-row">
+            <span class="flow-tag">输入</span>
+            <code id="initialUrl" class="url-code"></code>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-row">
+            <span class="flow-tag final">最终 URL</span>
+            <code id="finalUrl" class="url-code strong"></code>
+          </div>
+        </div>
+        <h3 class="timeline-title">逐步执行时间线</h3>
+        <ol id="timeline" class="timeline"></ol>
+      </div>
+
+      <div id="toast" class="toast" hidden></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
